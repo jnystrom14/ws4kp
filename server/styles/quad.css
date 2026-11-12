@@ -42,3 +42,101 @@ html, body {
 	inset: 0;
 	background: transparent;
 }
+
+/* app title: small pill at the top center seam, never catches clicks */
+#title {
+	position: fixed;
+	left: 50%;
+	top: 0;
+	transform: translateX(-50%);
+	z-index: 5;
+	padding: 0.1em 0.7em;
+	font: bold 14px/1.4 sans-serif;
+	color: #fff;
+	background: rgba(0, 0, 0, 0.55);
+	border-radius: 1em;
+	pointer-events: none;
+	opacity: 0.8;
+}
+
+.box .bar, .box .tag-label, .box .ack-label {
+	display: none;
+	position: absolute;
+	pointer-events: none;
+	font-family: sans-serif;
+	font-weight: bold;
+}
+
+/* yellow tag: watches and advisories */
+.box.tag .tag-label, .box.warning .tag-label:not(:empty), .box.acknowledged .tag-label:not(:empty) {
+	display: block;
+	left: 8px;
+	bottom: 8px;
+	padding: 2px 10px;
+	font-size: 1.1vw;
+	color: #000;
+	background: #ffd400;
+	border-radius: 4px;
+}
+
+/* warning: thick pulsing red border and a red top bar */
+.box.warning::after, .box.acknowledged::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	box-sizing: border-box;
+	pointer-events: none;
+	z-index: 2;
+}
+
+.box.warning::after {
+	border: 10px solid #e00000;
+	animation: quad-pulse 1.6s ease-in-out infinite;
+}
+
+.box.warning .bar, .box.acknowledged .bar {
+	display: block;
+	left: 0;
+	right: 0;
+	top: 0;
+	z-index: 3;
+	padding: 0.2em 0.5em;
+	text-align: center;
+	font-size: 2.2vw;
+	color: #fff;
+	background: #e00000;
+}
+
+.box.acknowledged .bar {
+	font-size: 1.1vw;
+	background: rgba(224, 0, 0, 0.85);
+}
+
+/* acknowledged: thin steady edge, no pulse */
+.box.acknowledged::after {
+	border: 2px solid #e00000;
+}
+
+.box.acknowledged .ack-label {
+	display: block;
+	right: 8px;
+	bottom: 8px;
+	z-index: 3;
+	padding: 2px 10px;
+	font-size: 1.1vw;
+	color: #fff;
+	background: #8a0000;
+	border-radius: 4px;
+}
+
+@keyframes quad-pulse {
+	0%, 100% { opacity: 1; }
+	50% { opacity: 0.25; }
+}
+
+/* takeover: the box fills the viewport above the others */
+.box.takeover {
+	position: fixed;
+	inset: 0;
+	z-index: 10;
+}

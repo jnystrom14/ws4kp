@@ -1,5 +1,11 @@
 import { TOWNS } from './towns.mjs';
 import { boxUrl } from './box-url.mjs';
+import { fetchTownAlerts } from './alerts.mjs';
+import { LEVEL, townStatus } from './alert-levels.mjs';
+import {
+	acknowledgeAll, reconcile, loadAcks, saveAcks,
+} from './ack-store.mjs';
+import { pickTakeover, POLL_MS } from './takeover.mjs';
 
 const MUSIC_BOX = 0;
 
@@ -18,7 +24,15 @@ const createBox = (town, index) => {
 	const overlay = document.createElement('div');
 	overlay.className = 'overlay';
 
-	box.append(frame, overlay);
+	const bar = document.createElement('div');
+	bar.className = 'bar';
+	const tag = document.createElement('div');
+	tag.className = 'tag-label';
+	const ackTag = document.createElement('div');
+	ackTag.className = 'ack-label';
+	ackTag.textContent = 'ACKNOWLEDGED';
+
+	box.append(frame, overlay, bar, tag, ackTag);
 	return box;
 };
 
@@ -86,8 +100,90 @@ const setupMusic = () => {
 	wrapper.focus();
 };
 
+// Alerts: poll NWS, show each box's state, take over the screen for extreme warnings, acknowledge on click or key.
+let acks = {};
+const features = TOWNS.map(() => []);
+let statuses = TOWNS.map(() => townStatus([], {}));
+let takeoverCycleStart = 0;
+let hadExtreme = false;
+
+const loadStoredAcks = () => {
+	try {
+		return loadAcks(window.localStorage);
+	} catch {
+		return {};
+	}
+};
+
+const persistAcks = () => {
+	try {
+		saveAcks(window.localStorage, acks);
+	} catch {
+		// storage unavailable: acknowledgments last until reload
+	}
+};
+
+const renderBox = (box, status) => {
+	const warning = status.level >= LEVEL.WARNING;
+	box.classList.toggle('tag', !warning && status.tags.length > 0);
+	box.classList.toggle('warning', warning && !status.acknowledged);
+	box.classList.toggle('acknowledged', warning && status.acknowledged);
+	box.querySelector('.bar').textContent = warning ? status.label : '';
+	box.querySelector('.tag-label').textContent = status.tags.join(', ');
+};
+
+const extremeBoxes = () => statuses
+	.map((status, index) => (status.level === LEVEL.EXTREME && !status.acknowledged ? index : -1))
+	.filter((index) => index >= 0);
+
+const renderAll = () => {
+	statuses = TOWNS.map((town, index) => townStatus(features[index], acks));
+	boxes.forEach((box, index) => renderBox(box, statuses[index]));
+};
+
+const tickTakeover = () => {
+	const list = extremeBoxes();
+	if (list.length && !hadExtreme) takeoverCycleStart = Date.now();
+	hadExtreme = list.length > 0;
+	const active = pickTakeover(Date.now(), takeoverCycleStart, list);
+	boxes.forEach((box, index) => box.classList.toggle('takeover', index === active));
+};
+
+const refreshAlerts = async () => {
+	const results = await Promise.all(TOWNS.map((town) => fetchTownAlerts(town)));
+	results.forEach((result, index) => {
+		if (result) features[index] = result;
+	});
+	acks = reconcile(features.flat(), acks);
+	persistAcks();
+	renderAll();
+	tickTakeover();
+};
+
+const acknowledge = (index) => {
+	if (!boxes[index] || statuses[index].level < LEVEL.WARNING) return;
+	acks = acknowledgeAll(features[index], acks);
+	persistAcks();
+	renderAll();
+	tickTakeover();
+};
+
+const setupAlerts = () => {
+	acks = loadStoredAcks();
+	boxes.forEach((box, index) => {
+		box.querySelector('.overlay').addEventListener('click', () => acknowledge(index));
+	});
+	document.getElementById('wrapper').addEventListener('keydown', (event) => {
+		if (/^[1-4]$/.test(event.key)) acknowledge(Number(event.key) - 1);
+	});
+	refreshAlerts();
+	setInterval(refreshAlerts, POLL_MS);
+	setInterval(tickTakeover, 1000);
+};
+
 buildGrid();
 setupMusic();
+setupAlerts();
 
 export { boxes };
 export default boxes;
