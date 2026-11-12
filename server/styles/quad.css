@@ -1,7 +1,7 @@
 html, body {
 	margin: 0;
 	padding: 0;
-	background: #141418;
+	background: #6e7074;
 	overflow: hidden;
 	width: 100%;
 	height: 100%;
@@ -45,8 +45,8 @@ html, body {
 	--name-height: 6vh;
 	position: relative;
 	overflow: hidden;
-	/* one quiet charcoal behind every show and name, no bands or borders */
-	background: #141418;
+	/* one quiet medium gray behind every show and name, no bands or borders */
+	background: #6e7074;
 	box-sizing: border-box;
 	display: flex;
 	flex-direction: column;
@@ -66,7 +66,8 @@ html, body {
 	justify-content: center;
 	font-family: 'Star4000', sans-serif;
 	font-size: calc(var(--name-height) * 0.62);
-	color: #e8d44d;
+	color: #fff;
+	text-shadow: 0 2px 0 #000;
 	background: transparent;
 	letter-spacing: 0.04em;
 	pointer-events: none;
