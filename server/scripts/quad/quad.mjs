@@ -6,6 +6,7 @@ import {
 	acknowledgeAll, reconcile, loadAcks, saveAcks,
 } from './ack-store.mjs';
 import setupMusic from './music.mjs';
+import setupSingleView from './single-view.mjs';
 import { pickTakeover, shouldRestartCycle, POLL_MS } from './takeover.mjs';
 
 // see-through show background, so the grid's backdrop shows around each 4:3 show
@@ -104,9 +105,26 @@ const extremeBoxes = () => statuses
 	.map((status, index) => (status.level === LEVEL.EXTREME && !status.acknowledged ? index : -1))
 	.filter((index) => index >= 0);
 
+// set once the single-town view is ready; returns the shown town's index or null
+let focusedIndex = () => null;
+
+// in single-town view, unacknowledged warnings for the hidden towns show as a note at the top
+const renderHiddenAlerts = () => {
+	const note = document.getElementById('hidden-alerts');
+	const focused = focusedIndex();
+	const lines = focused === null ? [] : statuses
+		.map((status, index) => ({ status, index }))
+		.filter(({ status, index }) => index !== focused
+			&& status.level >= LEVEL.WARNING && !status.acknowledged)
+		.map(({ status, index }) => `${TOWNS[index].name.toUpperCase()}: ${status.label}`);
+	note.textContent = lines.join('   •   ');
+	note.classList.toggle('show', lines.length > 0);
+};
+
 const renderAll = () => {
 	statuses = TOWNS.map((town, index) => townStatus(features[index], acks));
 	boxes.forEach((box, index) => renderBox(box, statuses[index]));
+	renderHiddenAlerts();
 };
 
 const tickTakeover = () => {
@@ -169,6 +187,12 @@ const setupAlerts = () => {
 };
 
 buildGrid();
+({ focusedIndex } = setupSingleView({
+	grid: document.getElementById('grid'),
+	boxes,
+	wrapper: document.getElementById('wrapper'),
+	onChange: () => renderHiddenAlerts(),
+}));
 document.getElementById('wrapper').focus();
 setupMusic(document.getElementById('wrapper'), document.getElementById('music-hint'));
 setupAlerts();
