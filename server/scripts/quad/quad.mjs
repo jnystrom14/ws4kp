@@ -31,30 +31,36 @@ const buildGrid = () => {
 	});
 };
 
-// Chrome blocks autoplay until the user interacts with the top page. On the first
-// pointerdown or keydown, click box 1's own music button (same origin) so its
-// play() call counts as user activated. Only used when the music is not yet playing.
+// Chrome blocks autoplay until the user interacts with the top page. On a pointerdown
+// or keydown, click box 1's own music button (same origin) so its play() call counts
+// as user activated. Returns true once the music is started (or already playing).
 const startMusic = () => {
 	try {
 		const doc = boxes[MUSIC_BOX].querySelector('iframe').contentDocument;
 		const container = doc?.getElementById('ToggleMediaContainer');
 		const button = doc?.getElementById('ToggleMedia');
+		// the button is missing until the app has loaded: report failure so we retry
+		if (!container || !button) return false;
 		// 'playing' class is off while the app waits for an interaction
-		if (button && !container.classList.contains('playing')) button.click();
+		if (!container.classList.contains('playing')) button.click();
+		return true;
 	} catch {
-		// cross-origin or not loaded yet: leave it, autoplay policy applies
+		// cross-origin: nothing more we can do
+		return true;
 	}
 };
 
+// Listeners stay in place until a start actually succeeds, so a gesture made
+// before box 1 has finished loading is not wasted.
 const setupMusic = () => {
 	const wrapper = document.getElementById('wrapper');
-	const once = () => {
-		wrapper.removeEventListener('pointerdown', once);
-		wrapper.removeEventListener('keydown', once);
-		startMusic();
+	const attempt = () => {
+		if (!startMusic()) return;
+		wrapper.removeEventListener('pointerdown', attempt);
+		wrapper.removeEventListener('keydown', attempt);
 	};
-	wrapper.addEventListener('pointerdown', once);
-	wrapper.addEventListener('keydown', once);
+	wrapper.addEventListener('pointerdown', attempt);
+	wrapper.addEventListener('keydown', attempt);
 	wrapper.focus();
 };
 

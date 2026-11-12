@@ -7,10 +7,10 @@ const TOWNS = [
 		name: 'Durango', query: 'Durango, CO', lat: 37.2753, lon: -107.8801,
 	},
 	{
-		name: 'Sunriver', query: 'Sunriver, OR', lat: 43.8838, lon: -121.4381,
+		name: 'Sunriver', query: 'Sunriver, OR', lat: 43.884, lon: -121.4386,
 	},
 	{
-		name: 'Poipu', query: 'Poipu, HI', lat: 21.873, lon: -159.453,
+		name: 'Poipu', query: 'Poipu, HI', lat: 21.8817, lon: -159.46,
 	},
 ];
 

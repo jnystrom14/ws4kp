@@ -26,3 +26,20 @@ test('url is relative', () => {
 	assert.ok(!u.startsWith('/') && !u.startsWith('http'));
 	assert.ok(u.startsWith('index.html?'));
 });
+
+test('towns match the spec, in order', () => {
+	assert.deepEqual(TOWNS, [
+		{
+			name: 'Bolivia', query: 'Bolivia, NC', lat: 34.0671, lon: -78.1481,
+		},
+		{
+			name: 'Durango', query: 'Durango, CO', lat: 37.2753, lon: -107.8801,
+		},
+		{
+			name: 'Sunriver', query: 'Sunriver, OR', lat: 43.8840, lon: -121.4386,
+		},
+		{
+			name: 'Poipu', query: 'Poipu, HI', lat: 21.8817, lon: -159.4600,
+		},
+	]);
+});
