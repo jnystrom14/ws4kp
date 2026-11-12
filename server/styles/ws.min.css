@@ -1448,19 +1448,23 @@ body.kiosk #loading .instructions {
 }
 
 #radar-html.weather-display,
-#future-radar-html.weather-display {
+#future-radar-html.weather-display,
+#hawaii-radar-html.weather-display {
   background-image: url("../images/backgrounds/4.png");
 }
 .wide #radar-html.weather-display,
-.wide #future-radar-html.weather-display {
+.wide #future-radar-html.weather-display,
+.wide #hawaii-radar-html.weather-display {
   background: url(../images/backgrounds/4-wide.png);
 }
 #radar-html.weather-display .header,
-#future-radar-html.weather-display .header {
+#future-radar-html.weather-display .header,
+#hawaii-radar-html.weather-display .header {
   height: 83px;
 }
 #radar-html.weather-display .header .title.dual,
-#future-radar-html.weather-display .header .title.dual {
+#future-radar-html.weather-display .header .title.dual,
+#hawaii-radar-html.weather-display .header .title.dual {
   color: white;
   font-family: "Arial", sans-serif;
   font-weight: bold;
@@ -1468,15 +1472,18 @@ body.kiosk #loading .instructions {
   left: 155px;
 }
 #radar-html.weather-display .header .title.dual .top,
-#future-radar-html.weather-display .header .title.dual .top {
+#future-radar-html.weather-display .header .title.dual .top,
+#hawaii-radar-html.weather-display .header .title.dual .top {
   top: -4px;
 }
 #radar-html.weather-display .header .title.dual .bottom,
-#future-radar-html.weather-display .header .title.dual .bottom {
+#future-radar-html.weather-display .header .title.dual .bottom,
+#hawaii-radar-html.weather-display .header .title.dual .bottom {
   top: 31px;
 }
 #radar-html.weather-display .header .right,
-#future-radar-html.weather-display .header .right {
+#future-radar-html.weather-display .header .right,
+#hawaii-radar-html.weather-display .header .right {
   position: absolute;
   right: 0px;
   width: 360px;
@@ -1491,16 +1498,19 @@ body.kiosk #loading .instructions {
   text-align: center;
 }
 #radar-html.weather-display .header .right .scale > div,
-#future-radar-html.weather-display .header .right .scale > div {
+#future-radar-html.weather-display .header .right .scale > div,
+#hawaii-radar-html.weather-display .header .right .scale > div {
   display: inline-block;
 }
 #radar-html.weather-display .header .right .scale-table,
-#future-radar-html.weather-display .header .right .scale-table {
+#future-radar-html.weather-display .header .right .scale-table,
+#hawaii-radar-html.weather-display .header .right .scale-table {
   display: table-row;
   border-collapse: collapse;
 }
 #radar-html.weather-display .header .right .scale-table .box,
-#future-radar-html.weather-display .header .right .scale-table .box {
+#future-radar-html.weather-display .header .right .scale-table .box,
+#hawaii-radar-html.weather-display .header .right .scale-table .box {
   display: table-cell;
   border: 2px solid black;
   width: 17px;
@@ -1508,44 +1518,54 @@ body.kiosk #loading .instructions {
   padding: 0;
 }
 #radar-html.weather-display .header .right .scale-table .box-1,
-#future-radar-html.weather-display .header .right .scale-table .box-1 {
+#future-radar-html.weather-display .header .right .scale-table .box-1,
+#hawaii-radar-html.weather-display .header .right .scale-table .box-1 {
   background-color: rgb(49, 210, 22);
 }
 #radar-html.weather-display .header .right .scale-table .box-2,
-#future-radar-html.weather-display .header .right .scale-table .box-2 {
+#future-radar-html.weather-display .header .right .scale-table .box-2,
+#hawaii-radar-html.weather-display .header .right .scale-table .box-2 {
   background-color: rgb(28, 138, 18);
 }
 #radar-html.weather-display .header .right .scale-table .box-3,
-#future-radar-html.weather-display .header .right .scale-table .box-3 {
+#future-radar-html.weather-display .header .right .scale-table .box-3,
+#hawaii-radar-html.weather-display .header .right .scale-table .box-3 {
   background-color: rgb(20, 90, 15);
 }
 #radar-html.weather-display .header .right .scale-table .box-4,
-#future-radar-html.weather-display .header .right .scale-table .box-4 {
+#future-radar-html.weather-display .header .right .scale-table .box-4,
+#hawaii-radar-html.weather-display .header .right .scale-table .box-4 {
   background-color: rgb(10, 40, 10);
 }
 #radar-html.weather-display .header .right .scale-table .box-5,
-#future-radar-html.weather-display .header .right .scale-table .box-5 {
+#future-radar-html.weather-display .header .right .scale-table .box-5,
+#hawaii-radar-html.weather-display .header .right .scale-table .box-5 {
   background-color: rgb(196, 179, 70);
 }
 #radar-html.weather-display .header .right .scale-table .box-6,
-#future-radar-html.weather-display .header .right .scale-table .box-6 {
+#future-radar-html.weather-display .header .right .scale-table .box-6,
+#hawaii-radar-html.weather-display .header .right .scale-table .box-6 {
   background-color: rgb(190, 72, 19);
 }
 #radar-html.weather-display .header .right .scale-table .box-7,
-#future-radar-html.weather-display .header .right .scale-table .box-7 {
+#future-radar-html.weather-display .header .right .scale-table .box-7,
+#hawaii-radar-html.weather-display .header .right .scale-table .box-7 {
   background-color: rgb(171, 14, 14);
 }
 #radar-html.weather-display .header .right .scale-table .box-8,
-#future-radar-html.weather-display .header .right .scale-table .box-8 {
+#future-radar-html.weather-display .header .right .scale-table .box-8,
+#hawaii-radar-html.weather-display .header .right .scale-table .box-8 {
   background-color: rgb(115, 31, 4);
 }
 #radar-html.weather-display .header .right .scale .text,
-#future-radar-html.weather-display .header .right .scale .text {
+#future-radar-html.weather-display .header .right .scale .text,
+#hawaii-radar-html.weather-display .header .right .scale .text {
   position: relative;
   top: -5px;
 }
 #radar-html.weather-display .header .right .time,
-#future-radar-html.weather-display .header .right .time {
+#future-radar-html.weather-display .header .right .time,
+#hawaii-radar-html.weather-display .header .right .time {
   position: relative;
   font-weight: normal;
   top: -14px;

@@ -103,6 +103,7 @@ const otherFiles = [
 	'server/scripts/quad/**',
 	'server/quad.html',
 	'server/styles/quad.css',
+	'server/data/hawaii-land.json',
 ];
 const copyOtherFiles = () => src(otherFiles, { base: 'server/', encoding: false })
 	.pipe(dest('./dist'));

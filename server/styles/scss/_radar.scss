@@ -3,7 +3,8 @@
 @use 'shared/positions'as p;
 
 #radar-html.weather-display,
-#future-radar-html.weather-display {
+#future-radar-html.weather-display,
+#hawaii-radar-html.weather-display {
 	background-image: url('../images/backgrounds/4.png');
 
 	.wide & {

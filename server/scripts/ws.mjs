@@ -16,6 +16,7 @@ import './modules/regionalforecast.mjs';
 import './modules/travelforecast.mjs';
 import './modules/progress.mjs';
 import './modules/radar.mjs';
+import './modules/hawaii-radar.mjs';
 import './modules/future-radar.mjs';
 import './modules/climate.mjs';
 import './modules/settings.mjs';
