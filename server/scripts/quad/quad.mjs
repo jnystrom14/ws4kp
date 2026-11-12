@@ -21,6 +21,11 @@ const createBox = (town, index) => {
 	frame.setAttribute('allow', 'autoplay; fullscreen');
 	frame.src = boxUrl(town, { music: index === MUSIC_BOX });
 
+	// always-visible town name under the show
+	const name = document.createElement('div');
+	name.className = 'town-name';
+	name.textContent = town.query;
+
 	const overlay = document.createElement('div');
 	overlay.className = 'overlay';
 
@@ -32,7 +37,7 @@ const createBox = (town, index) => {
 	ackTag.className = 'ack-label';
 	ackTag.textContent = 'ACKNOWLEDGED';
 
-	box.append(frame, overlay, bar, tag, ackTag);
+	box.append(frame, name, overlay, bar, tag, ackTag);
 	return box;
 };
 
