@@ -1,10 +1,42 @@
+/* backdrop in the show's own colors: deep indigo with a faint warm glow and soft scanlines */
+:root {
+	--backdrop:
+		repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.03) 0 1px, transparent 1px 4px),
+		radial-gradient(ellipse 70% 55% at 50% 105%, rgba(196, 92, 24, 0.28), transparent 70%),
+		radial-gradient(ellipse 80% 70% at 50% 30%, #2a2878 0%, #1c1a55 50%, #0e0c2e 100%);
+}
+
 html, body {
 	margin: 0;
 	padding: 0;
-	background: #000;
+	background: #0e0c2e;
 	overflow: hidden;
 	width: 100%;
 	height: 100%;
+}
+
+body {
+	background: var(--backdrop);
+	background-attachment: fixed;
+}
+
+/* first-click note for music; fades away once music starts */
+#music-hint {
+	position: fixed;
+	right: 12px;
+	top: 6px;
+	z-index: 5;
+	padding: 0.15em 0.8em;
+	font: bold 14px/1.4 sans-serif;
+	color: #ffd400;
+	background: rgba(0, 0, 0, 0.55);
+	border-radius: 1em;
+	pointer-events: none;
+	transition: opacity 1s;
+}
+
+#music-hint.hidden {
+	opacity: 0;
 }
 
 #wrapper {
@@ -26,7 +58,7 @@ html, body {
 	--name-height: 6vh;
 	position: relative;
 	overflow: hidden;
-	background: #000;
+	background: transparent;
 	box-sizing: border-box;
 	display: flex;
 	flex-direction: column;
@@ -176,4 +208,6 @@ html, body {
 	position: fixed;
 	inset: 0;
 	z-index: 10;
+	/* opaque, so the other three boxes don't show through */
+	background: var(--backdrop);
 }

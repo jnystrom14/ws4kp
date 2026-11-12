@@ -5,13 +5,28 @@ import { LEVEL, townStatus } from './alert-levels.mjs';
 import {
 	acknowledgeAll, reconcile, loadAcks, saveAcks,
 } from './ack-store.mjs';
+import setupMusic from './music.mjs';
 import { pickTakeover, shouldRestartCycle, POLL_MS } from './takeover.mjs';
 
-const MUSIC_BOX = 0;
+// see-through show background, so the grid's backdrop shows around each 4:3 show
+const SEE_THROUGH_CSS = 'html, body, body.kiosk, #divTwc { background: transparent !important; }';
+
+const makeSeeThrough = (frame) => {
+	try {
+		const doc = frame.contentDocument;
+		if (!doc || doc.getElementById('four-cast-see-through')) return;
+		const style = doc.createElement('style');
+		style.id = 'four-cast-see-through';
+		style.textContent = SEE_THROUGH_CSS;
+		doc.head.append(style);
+	} catch {
+		// not reachable: keep the show's own background
+	}
+};
 
 const boxes = [];
 
-const createBox = (town, index) => {
+const createBox = (town) => {
 	const box = document.createElement('div');
 	box.className = 'box';
 	box.dataset.town = town.name;
@@ -19,7 +34,9 @@ const createBox = (town, index) => {
 	const frame = document.createElement('iframe');
 	frame.title = town.name;
 	frame.setAttribute('allow', 'autoplay; fullscreen');
-	frame.src = boxUrl(town, { music: index === MUSIC_BOX });
+	// music is played by the grid page itself (music.mjs), so every box is muted
+	frame.src = boxUrl(town, { music: false });
+	frame.addEventListener('load', () => makeSeeThrough(frame));
 
 	// always-visible town name under the show
 	const name = document.createElement('div');
@@ -43,66 +60,11 @@ const createBox = (town, index) => {
 
 const buildGrid = () => {
 	const grid = document.getElementById('grid');
-	TOWNS.forEach((town, index) => {
-		const box = createBox(town, index);
+	TOWNS.forEach((town) => {
+		const box = createBox(town);
 		grid.append(box);
 		boxes.push(box);
 	});
-};
-
-// Chrome blocks autoplay until the user interacts with the top page. On a pointerdown
-// or keydown, click box 1's own music button (same origin) so its play() call counts
-// as user activated. Success means box 1's container has the `playing` class.
-const CHECK_DELAY_MS = 400;
-
-const musicElements = () => {
-	const doc = boxes[MUSIC_BOX].querySelector('iframe').contentDocument;
-	return {
-		container: doc?.getElementById('ToggleMediaContainer'),
-		button: doc?.getElementById('ToggleMedia'),
-	};
-};
-
-// Resolves true when the music is playing (or can never be started from here),
-// false when a later gesture should try again.
-const startMusic = async () => {
-	try {
-		const { container, button } = musicElements();
-		// the app has not finished loading yet
-		if (!container || !button) return false;
-		// never click while playing: that would turn the music off
-		if (container.classList.contains('playing')) return true;
-		button.click();
-		await new Promise((resolve) => {
-			setTimeout(resolve, CHECK_DELAY_MS);
-		});
-		// the click is lost if the app had not wired its handler yet
-		return musicElements().container?.classList.contains('playing') === true;
-	} catch (error) {
-		// a cross-origin frame can never be started from here, so stop trying;
-		// anything else (frame not ready) is transient
-		return error?.name === 'SecurityError';
-	}
-};
-
-// Listeners stay in place until a start actually succeeds, so a gesture made
-// before box 1 has finished loading is not wasted.
-const setupMusic = () => {
-	const wrapper = document.getElementById('wrapper');
-	let busy = false;
-	const attempt = async () => {
-		// a second gesture during the check must not click again
-		if (busy) return;
-		busy = true;
-		const started = await startMusic();
-		busy = false;
-		if (!started) return;
-		wrapper.removeEventListener('pointerdown', attempt);
-		wrapper.removeEventListener('keydown', attempt);
-	};
-	wrapper.addEventListener('pointerdown', attempt);
-	wrapper.addEventListener('keydown', attempt);
-	wrapper.focus();
 };
 
 // Alerts: poll NWS, show each box's state, take over the screen for extreme warnings, acknowledge on click or key.
@@ -207,7 +169,8 @@ const setupAlerts = () => {
 };
 
 buildGrid();
-setupMusic();
+document.getElementById('wrapper').focus();
+setupMusic(document.getElementById('wrapper'), document.getElementById('music-hint'));
 setupAlerts();
 
 export { boxes };
