@@ -1,6 +1,10 @@
-# Quad View: four towns on one screen
+# The Four-Cast (quad view): four towns on one screen
 
 Date: 2026-11-12. Fork: `jnystrom14/ws4kp`, branch `quad-view`, based on upstream 8.2.2.
+
+## Name
+
+Jen named it **The Four-Cast** (2026-11-12). It goes in the quad page's browser tab title and as a small title on the grid page. The in-show WeatherStar logo and title card stay unchanged (Claude's call, consistent with the non-goal of not changing a single show; Jen can ask for it later).
 
 ## Intent
 
