@@ -9,7 +9,7 @@ test('box 1 plays music', () => {
 	const { searchParams: p } = parse(boxUrl(TOWNS[0], { music: true }));
 	assert.equal(p.get('quad'), '1');
 	assert.equal(p.get('kiosk'), 'true');
-	assert.equal(p.get('viewMode'), 'wide');
+	assert.equal(p.get('viewMode'), 'standard');
 	assert.equal(p.get('mediaPlaying'), 'true');
 	assert.equal(p.get('mediaVolume'), '0.75');
 	assert.equal(p.get('latLonQuery'), 'Bolivia, NC');
