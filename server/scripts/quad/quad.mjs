@@ -33,20 +33,36 @@ const buildGrid = () => {
 
 // Chrome blocks autoplay until the user interacts with the top page. On a pointerdown
 // or keydown, click box 1's own music button (same origin) so its play() call counts
-// as user activated. Returns true once the music is started (or already playing).
-const startMusic = () => {
+// as user activated. Success means box 1's container has the `playing` class.
+const CHECK_DELAY_MS = 400;
+
+const musicElements = () => {
+	const doc = boxes[MUSIC_BOX].querySelector('iframe').contentDocument;
+	return {
+		container: doc?.getElementById('ToggleMediaContainer'),
+		button: doc?.getElementById('ToggleMedia'),
+	};
+};
+
+// Resolves true when the music is playing (or can never be started from here),
+// false when a later gesture should try again.
+const startMusic = async () => {
 	try {
-		const doc = boxes[MUSIC_BOX].querySelector('iframe').contentDocument;
-		const container = doc?.getElementById('ToggleMediaContainer');
-		const button = doc?.getElementById('ToggleMedia');
-		// the button is missing until the app has loaded: report failure so we retry
+		const { container, button } = musicElements();
+		// the app has not finished loading yet
 		if (!container || !button) return false;
-		// 'playing' class is off while the app waits for an interaction
-		if (!container.classList.contains('playing')) button.click();
-		return true;
-	} catch {
-		// cross-origin: nothing more we can do
-		return true;
+		// never click while playing: that would turn the music off
+		if (container.classList.contains('playing')) return true;
+		button.click();
+		await new Promise((resolve) => {
+			setTimeout(resolve, CHECK_DELAY_MS);
+		});
+		// the click is lost if the app had not wired its handler yet
+		return musicElements().container?.classList.contains('playing') === true;
+	} catch (error) {
+		// a cross-origin frame can never be started from here, so stop trying;
+		// anything else (frame not ready) is transient
+		return error?.name === 'SecurityError';
 	}
 };
 
@@ -54,8 +70,14 @@ const startMusic = () => {
 // before box 1 has finished loading is not wasted.
 const setupMusic = () => {
 	const wrapper = document.getElementById('wrapper');
-	const attempt = () => {
-		if (!startMusic()) return;
+	let busy = false;
+	const attempt = async () => {
+		// a second gesture during the check must not click again
+		if (busy) return;
+		busy = true;
+		const started = await startMusic();
+		busy = false;
+		if (!started) return;
 		wrapper.removeEventListener('pointerdown', attempt);
 		wrapper.removeEventListener('keydown', attempt);
 	};
