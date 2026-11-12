@@ -100,6 +100,7 @@ const otherFiles = [
 	'server/.well-known/security.txt',
 	// optional custom scripts the page loads from scripts/, so static hosting and both Docker images include them
 	'server/scripts/custom*.*',
+	'server/scripts/quad/**',
 ];
 const copyOtherFiles = () => src(otherFiles, { base: 'server/', encoding: false })
 	.pipe(dest('./dist'));
