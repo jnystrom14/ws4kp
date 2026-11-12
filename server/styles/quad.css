@@ -260,3 +260,66 @@ html, body {
 #hidden-alerts.show {
 	display: block;
 }
+
+/* phones and narrow windows: the four towns stack in one scrolling column,
+   each show the full width of the screen with its name below */
+@media (max-width: 700px) {
+	html, body {
+		overflow-x: hidden;
+		overflow-y: auto;
+		height: auto;
+	}
+
+	#wrapper, #grid {
+		width: 100%;
+		height: auto;
+	}
+
+	#grid, #grid.single {
+		grid-template-columns: 1fr;
+		grid-template-rows: none;
+		row-gap: 10px;
+		padding: 34px 0 10px;
+	}
+
+	#grid .box, #grid.single .box.focused {
+		--name-height: 40px;
+		grid-area: auto;
+		height: calc(100vw * 0.75 + var(--name-height));
+	}
+
+	/* the stack already shows every town, so single view is off on phones */
+	#grid.single .box:not(.focused):not(.takeover) {
+		display: flex;
+	}
+
+	.box .view-toggle, #hidden-alerts.show {
+		display: none;
+	}
+
+	#grid .box.takeover {
+		--name-height: 48px;
+		height: auto;
+	}
+
+	/* title on the left, music note on the right, so they do not overlap */
+	#title {
+		left: 8px;
+		top: 6px;
+		transform: none;
+	}
+
+	.box.warning .bar {
+		font-size: 16px;
+	}
+
+	.box.acknowledged .bar,
+	.box.tag .tag-label, .box.warning .tag-label:not(:empty), .box.acknowledged .tag-label:not(:empty),
+	.box.acknowledged .ack-label {
+		font-size: 12px;
+	}
+
+	.box.warning::after {
+		border-width: 6px;
+	}
+}
