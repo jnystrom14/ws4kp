@@ -19,6 +19,8 @@ const FRAME_LIST_URL = 'https://api.rainviewer.com/public/weather-maps.json';
 // relative so it works when the site is served from a subpath
 const LAND_URL = 'data/hawaii-land.json';
 const STATES = ['HI', 'AK'];
+// a hung frame list request becomes a failure instead of loading forever
+const FETCH_TIMEOUT = 15000;
 
 // the land polygons never change, load them once
 let landPromise = null;
@@ -64,6 +66,10 @@ class HawaiiRadar extends FilmstripWeatherDisplay {
 
 	// replaces the parent's getData: the parent stops for HI and AK, this display runs only for them
 	async getData(weatherParameters, refresh) {
+		// every call, including the disabled and mainland ones, replaces any build still running
+		this.buildId += 1;
+		const myBuild = this.buildId;
+
 		if (!WeatherDisplay.prototype.getData.call(this, weatherParameters, refresh)) return;
 
 		if (!STATES.includes(this.weatherParameters.state)) {
@@ -72,16 +78,14 @@ class HawaiiRadar extends FilmstripWeatherDisplay {
 			return;
 		}
 
-		// a newer call (refresh or change of mode) replaces this one
-		this.buildId += 1;
-		const myBuild = this.buildId;
-
+		// read everything the build needs before the first await, a change of location must not leak in
 		const size = RADAR_FINAL_SIZE();
+		const { latitude: lat, longitude: lon } = this.weatherParameters;
 		this.view = { radarFinalSize: size };
 
 		let images;
 		try {
-			images = await this.getImages(size);
+			images = await this.getImages({ lat, lon }, size);
 		} catch (error) {
 			if (myBuild !== this.buildId) return;
 			if (debugFlag('verbose-failures')) console.warn(`HawaiiRadar: ${error.message}`);
@@ -117,9 +121,9 @@ class HawaiiRadar extends FilmstripWeatherDisplay {
 	}
 
 	// the last imageMax RainViewer frames, oldest first, each drawn as one canvas: land, radar, coastline
-	async getImages(size) {
+	async getImages({ lat, lon }, size) {
 		const [frameList, polygons] = await Promise.all([
-			fetch(FRAME_LIST_URL).then((response) => {
+			fetch(FRAME_LIST_URL, { signal: AbortSignal.timeout(FETCH_TIMEOUT) }).then((response) => {
 				if (!response.ok) throw new Error(`RainViewer frame list ${response.status}`);
 				return response.json();
 			}),
@@ -133,7 +137,6 @@ class HawaiiRadar extends FilmstripWeatherDisplay {
 		}
 		const frames = past.slice(-this.imageMax);
 
-		const { latitude: lat, longitude: lon } = this.weatherParameters;
 		const tiles = tilesForView(lat, lon, ZOOM, size.width, size.height);
 		const view = {
 			width: size.width,
