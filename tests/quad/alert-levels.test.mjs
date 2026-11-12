@@ -55,7 +55,7 @@ test('townStatus picks highest unacknowledged', () => {
 });
 
 test('townStatus all acknowledged', () => {
-	const status = townStatus([alert({ id: 'a', event: 'Flood Warning' })], { a: LEVEL.WARNING });
+	const status = townStatus([alert({ id: 'a', event: 'Flood Warning' })], { a: { level: LEVEL.WARNING, lastSeen: 0 } });
 	assert.equal(status.level, LEVEL.WARNING);
 	assert.equal(status.acknowledged, true);
 });
@@ -71,7 +71,7 @@ test('acknowledged hurricane does not mute a new lower warning', () => {
 		alert({ id: 'h', event: 'Hurricane Warning' }),
 		alert({ id: 'f', event: 'Flood Warning' }),
 	];
-	const status = townStatus(features, { h: LEVEL.EXTREME });
+	const status = townStatus(features, { h: { level: LEVEL.EXTREME, lastSeen: 0 } });
 	assert.equal(status.level, LEVEL.WARNING);
 	assert.equal(status.acknowledged, false);
 	assert.equal(status.label, 'FLOOD WARNING');
@@ -82,8 +82,24 @@ test('acknowledged warning with only a tag alongside stays acknowledged', () => 
 		alert({ id: 'w', event: 'Flood Warning' }),
 		alert({ id: 't', event: 'Wind Advisory' }),
 	];
-	const status = townStatus(features, { w: LEVEL.WARNING });
+	const status = townStatus(features, { w: { level: LEVEL.WARNING, lastSeen: 0 } });
 	assert.equal(status.level, LEVEL.WARNING);
 	assert.equal(status.acknowledged, true);
 	assert.deepEqual(status.tags, ['Wind Advisory']);
+});
+
+test('classify survives a null or missing event', () => {
+	assert.equal(classifyAlert({ event: null, severity: 'Moderate' }), LEVEL.TAG);
+	assert.equal(classifyAlert({ severity: 'Moderate' }), LEVEL.TAG);
+	assert.equal(classifyAlert({ event: null, severity: 'Extreme' }), LEVEL.EXTREME);
+});
+
+test('townStatus with an Extreme alert lacking event', () => {
+	const features = [{ properties: { id: 'x', severity: 'Extreme', messageType: 'Alert' } }];
+	const status = townStatus(features, {});
+	assert.equal(status.level, LEVEL.EXTREME);
+	assert.equal(status.acknowledged, false);
+	assert.equal(status.label, 'WARNING');
+	const nullEvent = [{ properties: { id: 'y', event: null, severity: 'Extreme' } }];
+	assert.equal(townStatus(nullEvent, { y: { level: LEVEL.EXTREME, lastSeen: 0 } }).label, 'WARNING');
 });

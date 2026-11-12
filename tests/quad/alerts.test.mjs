@@ -20,6 +20,23 @@ test('keeps last state when fetch fails', async () => {
 	assert.equal(await fetchTownAlerts(town, async () => ({ ok: false })), null);
 });
 
+test('a rejected or aborted fetch returns null', async () => {
+	const aborted = async () => { throw new DOMException('timed out', 'TimeoutError'); };
+	assert.equal(await fetchTownAlerts(town, aborted), null);
+	assert.equal(await fetchTownAlerts(town, () => Promise.reject(new Error('down'))), null);
+});
+
+test('fetch is given a timeout signal', async () => {
+	let options;
+	const fakeFetch = async (u, o) => {
+		options = o;
+		return { ok: true, json: async () => ({ features: [] }) };
+	};
+	await fetchTownAlerts(town, fakeFetch);
+	assert.ok(options.signal instanceof AbortSignal);
+	assert.equal(options.signal.aborted, false);
+});
+
 test('null when body has no features array', async () => {
 	assert.equal(await fetchTownAlerts(town, async () => ({ ok: true, json: async () => ({}) })), null);
 });

@@ -8,7 +8,6 @@ import FilmstripWeatherDisplay from './filmstrip-weather-display.mjs';
 import { registerDisplay } from './navigation.mjs';
 import { timeZone } from './location.mjs';
 import { debugFlag } from './utils/debug.mjs';
-import fetchImageBlob from './utils/fetch-image-blob.mjs';
 import { RADAR_FINAL_SIZE } from './radar/constants.mjs';
 import {
 	ZOOM, TILE_PX, tilesForView, projectToView,
@@ -41,18 +40,35 @@ const getLand = () => {
 // decoded tiles by url, so a refresh or a change of display mode only downloads new frames
 let tileCache = new Map();
 
-// a tile that fails to load is drawn as empty (no rain), not as a failure of the whole frame
+// a tile request that never answers times out, so it cannot stall every later build
+// (plain fetch: RainViewer tiles allow it, and extra headers would break their CORS)
+const fetchTile = async (url) => {
+	const response = await fetch(url, { signal: AbortSignal.timeout(FETCH_TIMEOUT) });
+	if (!response.ok) throw new Error(`tile ${response.status}`);
+	return response.blob();
+};
+
+// a tile that fails to load (or times out) is drawn as empty (no rain), not as a failure of the whole frame,
+// and leaves the cache so the next build asks for it again
 const loadTile = (url) => {
 	if (!tileCache.has(url)) {
-		tileCache.set(url, fetchImageBlob(url)
+		const pending = fetchTile(url)
 			.then((blob) => createImageBitmap(blob))
 			.catch((error) => {
 				if (debugFlag('verbose-failures')) console.warn(`HawaiiRadar: tile ${url} failed (${error.message})`);
-				tileCache.delete(url);
+				if (tileCache.get(url) === pending) tileCache.delete(url);
 				return null;
-			}));
+			});
+		tileCache.set(url, pending);
 	}
 	return tileCache.get(url);
+};
+
+// frees the decoded bitmaps of tiles no longer in use; a failed tile resolved to null and has nothing to free
+const closeTiles = (pendings) => {
+	pendings.forEach((pending) => {
+		pending.then((bitmap) => bitmap?.close(), () => {});
+	});
 };
 
 class HawaiiRadar extends FilmstripWeatherDisplay {
@@ -85,7 +101,7 @@ class HawaiiRadar extends FilmstripWeatherDisplay {
 
 		let images;
 		try {
-			images = await this.getImages({ lat, lon }, size);
+			images = await this.getImages({ lat, lon }, size, myBuild);
 		} catch (error) {
 			if (myBuild !== this.buildId) return;
 			if (debugFlag('verbose-failures')) console.warn(`HawaiiRadar: ${error.message}`);
@@ -121,7 +137,7 @@ class HawaiiRadar extends FilmstripWeatherDisplay {
 	}
 
 	// the last imageMax RainViewer frames, oldest first, each drawn as one canvas: land, radar, coastline
-	async getImages({ lat, lon }, size) {
+	async getImages({ lat, lon }, size, myBuild = this.buildId) {
 		const [frameList, polygons] = await Promise.all([
 			fetch(FRAME_LIST_URL, { signal: AbortSignal.timeout(FETCH_TIMEOUT) }).then((response) => {
 				if (!response.ok) throw new Error(`RainViewer frame list ${response.status}`);
@@ -146,10 +162,14 @@ class HawaiiRadar extends FilmstripWeatherDisplay {
 
 		const urls = frames.map((frame) => tiles.map((tile) => `${frameList.host}${frame.path}/${TILE_PX}/${ZOOM}/${tile.x}/${tile.y}/2/1_1.png`));
 		const bitmaps = await Promise.all(urls.map((frameUrls) => Promise.all(frameUrls.map(loadTile))));
+		// a newer build owns the cache now: do not prune (or close) tiles it may be waiting on
+		if (myBuild !== this.buildId) throw new Error('superseded by a newer build');
 
-		// keep only the tiles in use
+		// keep only the tiles in use, and free the rest
 		const used = new Set(urls.flat());
+		const evicted = [...tileCache].filter(([url]) => !used.has(url)).map(([, pending]) => pending);
 		tileCache = new Map([...tileCache].filter(([url]) => used.has(url)));
+		closeTiles(evicted);
 
 		return frames.map((frame, frameIndex) => {
 			const canvas = document.createElement('canvas');

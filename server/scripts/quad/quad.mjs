@@ -150,20 +150,34 @@ const tickTakeover = () => {
 	boxes.forEach((box, index) => box.classList.toggle('takeover', index === active));
 };
 
+// a poll that is still running (each fetch can take up to its timeout) makes the next one skip
+let polling = false;
+
 const refreshAlerts = async () => {
-	const results = await Promise.all(TOWNS.map((town) => fetchTownAlerts(town)));
-	results.forEach((result, index) => {
-		if (result) {
-			features[index] = result;
-			loaded[index] = true;
+	if (polling) return;
+	polling = true;
+	try {
+		const results = await Promise.all(TOWNS.map((town) => fetchTownAlerts(town)));
+		results.forEach((result, index) => {
+			if (result) {
+				features[index] = result;
+				loaded[index] = true;
+			}
+		});
+		if (canPruneAcks(loaded)) {
+			acks = reconcile(features.flat(), acks, Date.now());
+			persistAcks();
 		}
-	});
-	if (canPruneAcks(loaded)) {
-		acks = reconcile(features.flat(), acks);
-		persistAcks();
+		renderAll();
+		tickTakeover();
+	} finally {
+		polling = false;
 	}
-	renderAll();
-	tickTakeover();
+};
+
+// an error in one poll must never become an unhandled rejection, the next poll tries again
+const pollAlerts = () => {
+	refreshAlerts().catch((error) => console.error('quad: alert poll failed', error));
 };
 
 const acknowledge = (index) => {
@@ -182,8 +196,8 @@ const setupAlerts = () => {
 	document.getElementById('wrapper').addEventListener('keydown', (event) => {
 		if (/^[1-4]$/.test(event.key)) acknowledge(Number(event.key) - 1);
 	});
-	refreshAlerts();
-	setInterval(refreshAlerts, POLL_MS);
+	pollAlerts();
+	setInterval(pollAlerts, POLL_MS);
 	setInterval(tickTakeover, 1000);
 };
 

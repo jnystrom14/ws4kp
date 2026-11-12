@@ -15,7 +15,9 @@ const TAG_ONLY_EVENTS = [
 ];
 
 const classifyAlert = (properties) => {
-	const { event = '', severity, messageType } = properties;
+	const { severity, messageType } = properties;
+	// a malformed alert (event null or missing) must not stop all alert handling
+	const event = properties.event ?? '';
 	if (messageType === 'Cancel') return LEVEL.NONE;
 	if (severity === 'Extreme' || LEVEL2_EVENTS.includes(event)) return LEVEL.EXTREME;
 	if (TAG_ONLY_EVENTS.includes(event)) return LEVEL.TAG;
@@ -23,21 +25,26 @@ const classifyAlert = (properties) => {
 	return LEVEL.TAG;
 };
 
+// The acknowledged level of one stored ack: { level, lastSeen }, or a plain number from older versions.
+const ackLevel = (entry) => (typeof entry === 'number' ? entry : entry?.level);
+
 // An alert is acknowledged when its own id, or any alert it updates, was acknowledged at this level or higher.
 const isAcknowledged = (properties, acks = {}) => {
 	const level = classifyAlert(properties);
-	if (acks[properties.id] >= level) return true;
-	return (properties.references || []).some((ref) => acks[ref.identifier] >= level);
+	if (ackLevel(acks[properties.id]) >= level) return true;
+	return (properties.references || []).some((ref) => ackLevel(acks[ref.identifier]) >= level);
 };
 
 // Highest alert wins; first one wins a tie.
 const highest = (items) => items.reduce((best, item) => (!best || item.level > best.level ? item : best), null);
 
+const labelFor = (alert) => (alert.event ? alert.event.toUpperCase() : 'WARNING');
+
 const townStatus = (features, acks = {}) => {
 	const alerts = features
 		.map(({ properties }) => ({
 			level: classifyAlert(properties),
-			event: properties.event,
+			event: properties.event || '',
 			acknowledged: isAcknowledged(properties, acks),
 		}))
 		.filter((alert) => alert.level > LEVEL.NONE);
@@ -48,13 +55,13 @@ const townStatus = (features, acks = {}) => {
 	const unacknowledged = highest(warnings.filter((alert) => !alert.acknowledged));
 	if (unacknowledged) {
 		return {
-			level: unacknowledged.level, acknowledged: false, label: unacknowledged.event.toUpperCase(), tags,
+			level: unacknowledged.level, acknowledged: false, label: labelFor(unacknowledged), tags,
 		};
 	}
 	const acknowledged = highest(warnings);
 	if (acknowledged) {
 		return {
-			level: acknowledged.level, acknowledged: true, label: acknowledged.event.toUpperCase(), tags,
+			level: acknowledged.level, acknowledged: true, label: labelFor(acknowledged), tags,
 		};
 	}
 	return {
@@ -63,5 +70,5 @@ const townStatus = (features, acks = {}) => {
 };
 
 export {
-	LEVEL, LEVEL2_EVENTS, TAG_ONLY_EVENTS, classifyAlert, isAcknowledged, townStatus,
+	LEVEL, LEVEL2_EVENTS, TAG_ONLY_EVENTS, classifyAlert, ackLevel, isAcknowledged, townStatus,
 };
