@@ -23,3 +23,11 @@ test('keeps last state when fetch fails', async () => {
 test('null when body has no features array', async () => {
 	assert.equal(await fetchTownAlerts(town, async () => ({ ok: true, json: async () => ({}) })), null);
 });
+
+test('acks are pruned only after every town has loaded', async () => {
+	const { canPruneAcks } = await import('../../server/scripts/quad/alerts.mjs');
+	assert.equal(canPruneAcks([true, true, true, true]), true);
+	assert.equal(canPruneAcks([true, false, true, true]), false);
+	assert.equal(canPruneAcks([false, false, false, false]), false);
+	assert.equal(canPruneAcks([]), false);
+});

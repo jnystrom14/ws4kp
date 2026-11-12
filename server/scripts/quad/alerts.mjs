@@ -11,5 +11,9 @@ const fetchTownAlerts = async (town, fetchFn = fetch) => {
 	}
 };
 
-export { fetchTownAlerts };
+// Stored acknowledgments may only be pruned once every town has had a successful fetch since page load.
+// Otherwise a failed first fetch would wipe that town's acknowledgments.
+const canPruneAcks = (loadedFlags) => loadedFlags.length > 0 && loadedFlags.every(Boolean);
+
+export { fetchTownAlerts, canPruneAcks };
 export default fetchTownAlerts;

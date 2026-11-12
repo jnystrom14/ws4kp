@@ -11,6 +11,9 @@ const pickTakeover = (nowMs, cycleStartMs, level2Boxes) => {
 	return slot < level2Boxes.length ? level2Boxes[slot] : null;
 };
 
+// The cycle restarts when a box joins the list, so a new extreme warning takes over at once.
+const shouldRestartCycle = (previousBoxes, nextBoxes) => nextBoxes.some((index) => !previousBoxes.includes(index));
+
 export {
-	TAKEOVER_MS, CYCLE_MS, POLL_MS, pickTakeover,
+	TAKEOVER_MS, CYCLE_MS, POLL_MS, pickTakeover, shouldRestartCycle,
 };

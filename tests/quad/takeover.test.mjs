@@ -29,3 +29,12 @@ test('two level 2 boxes take turns', () => {
 test('no boxes gives null', () => {
 	assert.equal(pickTakeover(5, 0, []), null);
 });
+
+test('cycle restarts when a box joins the list', async () => {
+	const { shouldRestartCycle } = await import('../../server/scripts/quad/takeover.mjs');
+	assert.equal(shouldRestartCycle([], [2]), true);
+	assert.equal(shouldRestartCycle([2], [2]), false);
+	assert.equal(shouldRestartCycle([2], [1, 2]), true);
+	assert.equal(shouldRestartCycle([1, 2], [2]), false);
+	assert.equal(shouldRestartCycle([2], []), false);
+});

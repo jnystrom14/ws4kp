@@ -1,11 +1,11 @@
 import { TOWNS } from './towns.mjs';
 import { boxUrl } from './box-url.mjs';
-import { fetchTownAlerts } from './alerts.mjs';
+import { fetchTownAlerts, canPruneAcks } from './alerts.mjs';
 import { LEVEL, townStatus } from './alert-levels.mjs';
 import {
 	acknowledgeAll, reconcile, loadAcks, saveAcks,
 } from './ack-store.mjs';
-import { pickTakeover, POLL_MS } from './takeover.mjs';
+import { pickTakeover, shouldRestartCycle, POLL_MS } from './takeover.mjs';
 
 const MUSIC_BOX = 0;
 
@@ -105,7 +105,8 @@ let acks = {};
 const features = TOWNS.map(() => []);
 let statuses = TOWNS.map(() => townStatus([], {}));
 let takeoverCycleStart = 0;
-let hadExtreme = false;
+let previousExtreme = [];
+const loaded = TOWNS.map(() => false);
 
 const loadStoredAcks = () => {
 	try {
@@ -143,8 +144,8 @@ const renderAll = () => {
 
 const tickTakeover = () => {
 	const list = extremeBoxes();
-	if (list.length && !hadExtreme) takeoverCycleStart = Date.now();
-	hadExtreme = list.length > 0;
+	if (shouldRestartCycle(previousExtreme, list)) takeoverCycleStart = Date.now();
+	previousExtreme = list;
 	const active = pickTakeover(Date.now(), takeoverCycleStart, list);
 	boxes.forEach((box, index) => box.classList.toggle('takeover', index === active));
 };
@@ -152,10 +153,15 @@ const tickTakeover = () => {
 const refreshAlerts = async () => {
 	const results = await Promise.all(TOWNS.map((town) => fetchTownAlerts(town)));
 	results.forEach((result, index) => {
-		if (result) features[index] = result;
+		if (result) {
+			features[index] = result;
+			loaded[index] = true;
+		}
 	});
-	acks = reconcile(features.flat(), acks);
-	persistAcks();
+	if (canPruneAcks(loaded)) {
+		acks = reconcile(features.flat(), acks);
+		persistAcks();
+	}
 	renderAll();
 	tickTakeover();
 };
