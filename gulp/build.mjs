@@ -101,6 +101,8 @@ const otherFiles = [
 	// optional custom scripts the page loads from scripts/, so static hosting and both Docker images include them
 	'server/scripts/custom*.*',
 	'server/scripts/quad/**',
+	'server/quad.html',
+	'server/styles/quad.css',
 ];
 const copyOtherFiles = () => src(otherFiles, { base: 'server/', encoding: false })
 	.pipe(dest('./dist'));
