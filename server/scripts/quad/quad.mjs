@@ -7,6 +7,7 @@ import {
 } from './ack-store.mjs';
 import setupMusic from './music.mjs';
 import setupSingleView from './single-view.mjs';
+import setupBackgrounds from './backgrounds.mjs';
 import { pickTakeover, shouldRestartCycle, POLL_MS } from './takeover.mjs';
 
 // see-through show background, so the grid's backdrop shows around each 4:3 show
@@ -193,6 +194,7 @@ buildGrid();
 	wrapper: document.getElementById('wrapper'),
 	onChange: () => renderHiddenAlerts(),
 }));
+setupBackgrounds({ boxes, wrapper: document.getElementById('wrapper'), label: document.getElementById('bg-label') });
 document.getElementById('wrapper').focus();
 setupMusic(document.getElementById('wrapper'), document.getElementById('music-hint'));
 setupAlerts();
