@@ -3,6 +3,8 @@ const boxUrl = (town, { music }) => {
 	const params = new URLSearchParams({
 		quad: '1',
 		kiosk: 'true',
+		// widescreen enhanced fills the wide box and adds wider maps and more data
+		viewMode: 'wide-enhanced',
 		latLonQuery: town.query,
 		latLon: JSON.stringify({ lat: town.lat, lon: town.lon }),
 		mediaPlaying: String(!!music),
