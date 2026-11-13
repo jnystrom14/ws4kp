@@ -1,7 +1,7 @@
 html, body {
 	margin: 0;
 	padding: 0;
-	background: #6e7074;
+	background: #5a5c60;
 	overflow: hidden;
 	width: 100%;
 	height: 100%;
@@ -46,7 +46,7 @@ html, body {
 	position: relative;
 	overflow: hidden;
 	/* one quiet medium gray behind every show and name, no bands or borders */
-	background: #6e7074;
+	background: #5a5c60;
 	box-sizing: border-box;
 	display: flex;
 	flex-direction: column;
@@ -97,22 +97,6 @@ html, body {
 	position: absolute;
 	inset: 0;
 	background: transparent;
-}
-
-/* app title: small pill at the top center seam, never catches clicks */
-#title {
-	position: fixed;
-	left: 50%;
-	top: 0;
-	transform: translateX(-50%);
-	z-index: 5;
-	padding: 0.1em 0.7em;
-	font: bold 14px/1.4 sans-serif;
-	color: #fff;
-	background: rgba(0, 0, 0, 0.55);
-	border-radius: 1em;
-	pointer-events: none;
-	opacity: 0.8;
 }
 
 .box .bar, .box .tag-label, .box .ack-label {
@@ -302,12 +286,6 @@ html, body {
 		height: auto;
 	}
 
-	/* title on the left, music note on the right, so they do not overlap */
-	#title {
-		left: 8px;
-		top: 6px;
-		transform: none;
-	}
 
 	.box.warning .bar {
 		font-size: 16px;
