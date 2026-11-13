@@ -36,3 +36,7 @@ test('every real screen is covered by the id list', () => {
 test('Poipu gets only the Hawaii radar, so the radar panel does not wait on a radar that never loads', () => {
 	assert.deepEqual(enabled(panelUrls(TOWNS[3])[0]), ['hawaii-radar']);
 });
+
+test('Poipu\'s Around Town panel shows the regional map instead of the Oahu-heavy list', () => {
+	assert.deepEqual(enabled(panelUrls(TOWNS[3])[3]), ['regional-forecast', 'extended-forecast']);
+});
