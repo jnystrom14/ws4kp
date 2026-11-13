@@ -26,7 +26,7 @@ const saveTown = (index) => {
 };
 
 const setupTownView = ({
-	container, wrapper, boxes, towns, onFrameLoad, onAcknowledge, beforeEnter, onChange,
+	container, wrapper, boxes, towns, onFrameLoad, onAcknowledge, beforeEnter, onChange, coastLine, isCoastal,
 }) => {
 	let current = null;
 
@@ -60,7 +60,19 @@ const setupTownView = ({
 			frame.addEventListener('load', () => onFrameLoad?.(frame));
 			const name = document.createElement('div');
 			name.className = 'town-name';
-			name.textContent = `${town.query} · ${panel.label}`;
+			const nameText = document.createElement('span');
+			// a coastal town's Around Town strip carries tides and surf instead of the
+			// town name (the other three strips show it), so the line fits
+			const coastal = Boolean(panel.coast && isCoastal?.(town.name));
+			nameText.textContent = coastal ? panel.label : `${town.query} · ${panel.label}`;
+			name.append(nameText);
+			if (coastal) {
+				const coast = document.createElement('span');
+				coast.className = 'coast';
+				coast.dataset.coast = town.name;
+				coast.textContent = coastLine?.(town.name) ?? '';
+				name.append(coast);
+			}
 			const overlay = document.createElement('div');
 			overlay.className = 'overlay';
 			overlay.addEventListener('click', () => onAcknowledge?.(index));

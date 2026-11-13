@@ -10,7 +10,7 @@ const PANELS = [
 	{ label: 'Radar', screens: radarScreens },
 	{ label: 'Right Now', screens: ['hazards', 'current-weather', 'almanac'] },
 	{ label: 'Forecast', screens: ['local-forecast'] },
-	{ label: 'Around Town', screens: ['latest-observations', 'extended-forecast'] },
+	{ label: 'Around Town', screens: ['latest-observations', 'extended-forecast'], coast: true },
 ];
 
 const panelUrls = (town) => PANELS.map(({ screens }) => boxUrl(town, {

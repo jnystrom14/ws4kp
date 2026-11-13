@@ -8,6 +8,8 @@ import {
 import setupMusic from './music.mjs';
 import setupSingleView from './single-view.mjs';
 import setupTownView from './town-view.mjs';
+import setupCoast from './coast-strip.mjs';
+import { COAST } from './coast.mjs';
 import { pickTakeover, shouldRestartCycle, POLL_MS } from './takeover.mjs';
 
 // see-through show background, so the grid's backdrop shows around each 4:3 show
@@ -43,7 +45,16 @@ const createBox = (town) => {
 	// always-visible town name under the show
 	const name = document.createElement('div');
 	name.className = 'town-name';
-	name.textContent = town.query;
+	const nameText = document.createElement('span');
+	nameText.textContent = town.query;
+	name.append(nameText);
+	// coastal towns: tides and surf beside the name
+	if (COAST[town.name]) {
+		const coast = document.createElement('span');
+		coast.className = 'coast';
+		coast.dataset.coast = town.name;
+		name.append(coast);
+	}
 
 	const overlay = document.createElement('div');
 	overlay.className = 'overlay';
@@ -193,6 +204,7 @@ const setupAlerts = () => {
 };
 
 buildGrid();
+const coast = setupCoast();
 const singleView = setupSingleView({
 	grid: document.getElementById('grid'),
 	boxes,
@@ -206,6 +218,8 @@ singleIndex = singleView.focusedIndex;
 	boxes,
 	towns: TOWNS,
 	onFrameLoad: makeSeeThrough,
+	coastLine: coast.lineFor,
+	isCoastal: (name) => Boolean(COAST[name]),
 	onAcknowledge: (index) => acknowledge(index),
 	beforeEnter: () => singleView.clear(),
 	onChange: () => renderAll(),
