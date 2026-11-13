@@ -223,6 +223,44 @@ html, body {
 	font-size: 18px;
 }
 
+/* the town-view button sits just right of the expand button */
+.box .town-toggle {
+	left: 62px;
+}
+
+/* town view: four panels of one town fill the screen; the grid hides
+   (a takeover box stays visible, so extreme warnings still reach the screen) */
+#town-view {
+	position: fixed;
+	inset: 0;
+	z-index: 1;
+	--name-height: 6vh;
+}
+
+#town-view[hidden] {
+	display: none;
+}
+
+#town-view .panels {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	grid-template-rows: 1fr 1fr;
+	width: 100%;
+	height: 100%;
+}
+
+#town-view .panel {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+	overflow: hidden;
+}
+
+#wrapper.town-mode #grid .box:not(.takeover) {
+	display: none;
+}
+
 /* single-town view: warnings for the hidden towns */
 #hidden-alerts {
 	display: none;
@@ -279,6 +317,44 @@ html, body {
 
 	.box .view-toggle, #hidden-alerts.show {
 		display: none;
+	}
+
+	/* phones have no hover: the town-view button is always shown, top right of each show */
+	#grid .box .town-toggle {
+		display: block;
+		opacity: 0.85;
+		left: auto;
+		right: 8px;
+		top: 8px;
+		font-size: 16px;
+	}
+
+	/* phones: the town view stacks its four panels like the towns */
+	#town-view {
+		position: static;
+		height: auto;
+		--name-height: 40px;
+	}
+
+	#town-view .panels {
+		grid-template-columns: 1fr;
+		grid-template-rows: none;
+		row-gap: 10px;
+		height: auto;
+		padding: 34px 0 10px;
+	}
+
+	#town-view .panel {
+		height: calc(100vw * 0.75 + var(--name-height));
+	}
+
+	/* phones have no hover, so the town view's way back is always shown */
+	#town-view > .view-toggle {
+		display: block;
+		opacity: 1;
+		top: 4px;
+		left: 8px;
+		font-size: 14px;
 	}
 
 	#grid .box.takeover {

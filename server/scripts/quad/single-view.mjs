@@ -63,7 +63,12 @@ const setupSingleView = ({
 	});
 
 	apply();
-	return { focusedIndex: () => focused };
+	const clear = () => {
+		if (focused === null) return;
+		focused = null;
+		apply();
+	};
+	return { focusedIndex: () => focused, clear };
 };
 
 export default setupSingleView;

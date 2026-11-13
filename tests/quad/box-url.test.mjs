@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { TOWNS } from '../../server/scripts/quad/towns.mjs';
-import { boxUrl } from '../../server/scripts/quad/box-url.mjs';
+import { boxUrl, SCREEN_IDS } from '../../server/scripts/quad/box-url.mjs';
 
 const parse = (x) => new URL(x, 'http://h/');
 
@@ -43,4 +43,24 @@ test('towns match the spec, in order', () => {
 			name: 'Poipu', query: 'Poipu, HI', lat: 21.8817, lon: -159.4600,
 		},
 	]);
+});
+
+test('without screens, the show keeps its own choices except the hourly graph, which is off', () => {
+	const { searchParams: p } = parse(boxUrl(TOWNS[0], { music: false }));
+	assert.equal(p.get('hourly-graph-checkbox'), 'false');
+	SCREEN_IDS.filter((id) => id !== 'hourly-graph').forEach((id) => assert.equal(p.get(`${id}-checkbox`), null));
+});
+
+test('the hourly graph stays off even when a screen list asks for it', () => {
+	const { searchParams: p } = parse(boxUrl(TOWNS[0], { music: false, screens: ['hourly-graph', 'radar'] }));
+	assert.equal(p.get('hourly-graph-checkbox'), 'false');
+	assert.equal(p.get('radar-checkbox'), 'true');
+});
+
+test('with screens, only those screens are on and every other screen is off', () => {
+	const { searchParams: p } = parse(boxUrl(TOWNS[0], { music: false, screens: ['radar', 'hawaii-radar'] }));
+	assert.equal(p.get('radar-checkbox'), 'true');
+	assert.equal(p.get('hawaii-radar-checkbox'), 'true');
+	SCREEN_IDS.filter((id) => !['radar', 'hawaii-radar'].includes(id))
+		.forEach((id) => assert.equal(p.get(`${id}-checkbox`), 'false', id));
 });

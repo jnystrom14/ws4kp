@@ -7,6 +7,7 @@ import {
 } from './ack-store.mjs';
 import setupMusic from './music.mjs';
 import setupSingleView from './single-view.mjs';
+import setupTownView from './town-view.mjs';
 import { pickTakeover, shouldRestartCycle, POLL_MS } from './takeover.mjs';
 
 // see-through show background, so the grid's backdrop shows around each 4:3 show
@@ -105,8 +106,10 @@ const extremeBoxes = () => statuses
 	.map((status, index) => (status.level === LEVEL.EXTREME && !status.acknowledged ? index : -1))
 	.filter((index) => index >= 0);
 
-// set once the single-town view is ready; returns the shown town's index or null
-let focusedIndex = () => null;
+// set once the single-town and town views are ready; each returns its town's index or null
+let singleIndex = () => null;
+let townIndex = () => null;
+const focusedIndex = () => singleIndex() ?? townIndex();
 
 // in single-town view, unacknowledged warnings for the hidden towns show as a note at the top
 const renderHiddenAlerts = () => {
@@ -124,6 +127,9 @@ const renderHiddenAlerts = () => {
 const renderAll = () => {
 	statuses = TOWNS.map((town, index) => townStatus(features[index], acks));
 	boxes.forEach((box, index) => renderBox(box, statuses[index]));
+	// the town view carries its own town's alert state around the whole screen
+	const town = townIndex();
+	renderBox(document.getElementById('town-view'), town === null ? townStatus([], {}) : statuses[town]);
 	renderHiddenAlerts();
 };
 
@@ -187,11 +193,22 @@ const setupAlerts = () => {
 };
 
 buildGrid();
-({ focusedIndex } = setupSingleView({
+const singleView = setupSingleView({
 	grid: document.getElementById('grid'),
 	boxes,
 	wrapper: document.getElementById('wrapper'),
 	onChange: () => renderHiddenAlerts(),
+});
+singleIndex = singleView.focusedIndex;
+({ townIndex } = setupTownView({
+	container: document.getElementById('town-view'),
+	wrapper: document.getElementById('wrapper'),
+	boxes,
+	towns: TOWNS,
+	onFrameLoad: makeSeeThrough,
+	onAcknowledge: (index) => acknowledge(index),
+	beforeEnter: () => singleView.clear(),
+	onChange: () => renderAll(),
 }));
 document.getElementById('wrapper').focus();
 setupMusic(document.getElementById('wrapper'), document.getElementById('music-hint'));
