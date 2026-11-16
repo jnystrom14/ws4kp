@@ -179,6 +179,8 @@ The WeatherStar had wonderful background music from the smooth jazz and new age 
 
 I've used AI tools to create WeatherStar-inspired music tracks that are unencumbered by copyright and are included in this repo. To keep the size down, I've only included 4 tracks. Additional tracks are in a companion repository [ws4kp-music](https://github.com/netbymatt/ws4kp-music).
 
+The Four-Cast grid page also plays four slow jazz tracks by Kevin MacLeod (incompetech.com), licensed under Creative Commons: By Attribution 4.0 (https://creativecommons.org/licenses/by/4.0/): Smooth Lovin, Airport Lounge, Lobby Time and Bossa Antigua.
+
 If you're looking for the original music that played during forecasts [TWCClassics](https://twcclassics.com/audio/) has thorough documentation of playlists.
 
 #### Music doesn't auto play

@@ -9,6 +9,21 @@ const NAME_MS = 6000;
 // "default/Moonlit sky.mp3" -> "Moonlit sky"
 const songName = (file) => file.split('/').pop().replace(/\.mp3$/i, '');
 
+// Creative Commons Attribution tracks: the credit shows with the song name
+const KEVIN_MACLEOD = 'Kevin MacLeod (incompetech.com), CC BY 4.0';
+const CREDITS = {
+	'Smooth Lovin': KEVIN_MACLEOD,
+	'Airport Lounge': KEVIN_MACLEOD,
+	'Lobby Time': KEVIN_MACLEOD,
+	'Bossa Antigua': KEVIN_MACLEOD,
+};
+
+// what the corner shows while a song starts
+const songLabel = (file) => {
+	const name = songName(file);
+	return CREDITS[name] ? `♫ ${name} · ${CREDITS[name]}` : `♫ ${name}`;
+};
+
 const shuffle = (list) => {
 	const copy = [...list];
 	for (let i = copy.length - 1; i > 0; i -= 1) {
@@ -45,7 +60,7 @@ const setupMusic = async (wrapper, hint) => {
 	let hideTimer;
 	const showName = () => {
 		if (!hint) return;
-		hint.textContent = `\u266B ${songName(files[track])}`;
+		hint.textContent = songLabel(files[track]);
 		hint.classList.remove('hidden');
 		clearTimeout(hideTimer);
 		hideTimer = setTimeout(() => hint.classList.add('hidden'), NAME_MS);
@@ -87,4 +102,5 @@ const setupMusic = async (wrapper, hint) => {
 	tryStart();
 };
 
+export { songLabel };
 export default setupMusic;
